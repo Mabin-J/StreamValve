@@ -121,7 +121,7 @@ public class StreamValveLocalTest {
                 "Too much different!",
                 estimatedMilliseconds,
                 totalPassedTime,
-                estimatedMilliseconds / 0.01
+                estimatedMilliseconds / 100
         );
         LOG.info("PASS!");
 
@@ -248,7 +248,7 @@ public class StreamValveLocalTest {
                 "Too much different!",
                 estimatedMilliseconds,
                 totalPassedTime,
-                estimatedMilliseconds / 0.01);
+                estimatedMilliseconds / 100);
         LOG.info("PASS!");
 
 
