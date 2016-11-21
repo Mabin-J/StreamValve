@@ -7,24 +7,47 @@ import java.io.InputStream;
 /**
  * Valved InputStream
  */
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class ValvedInputStream extends InputStream{
     private InputStream targetInputStream;
     private StreamValve streamValve;
 
+
+
     /**
      * Constructor of Valved InputStream
-     * @param targetInputStream target InputStream
-     * @param speedBytesPerSecond Speed. Bytes per Second.
+     * @param targetInputStream Target InputStream
+     */
+    public ValvedInputStream(InputStream targetInputStream){
+        this.targetInputStream = targetInputStream;
+        streamValve = new StreamValve();
+    }
+
+    /**
+     * Constructor of Valved InputStream with Speed Option.<br/>
+     * Speed have to be Bytes per Second.
+     * @param targetInputStream Target InputStream
+     * @param speedBytesPerSecond Streaming Speed. (Bytes per Second)
      */
     public ValvedInputStream(InputStream targetInputStream, long speedBytesPerSecond) {
-        this.targetInputStream = targetInputStream;
+        this(targetInputStream);
+        setSpeed(speedBytesPerSecond);
+    }
 
-        streamValve = new StreamValve(speedBytesPerSecond);
+
+
+    /**
+     * Set Streaming Speed.<br/>
+     * Speed have to be Bytes per Second.
+     * @param speedBytesPerSecond Streaming Speed. (Bytes per Second)
+     */
+    public void setSpeed(long speedBytesPerSecond){
+        streamValve.setSpeed(speedBytesPerSecond);
     }
 
     @Override
     public int read() throws IOException {
-        streamValve.delay();
+        streamValve.flowControl();
 
         return targetInputStream.read();
     }

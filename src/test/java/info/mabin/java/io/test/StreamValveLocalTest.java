@@ -4,7 +4,9 @@ import info.mabin.java.io.RandomByteInputStream;
 import info.mabin.java.io.ValvedInputStream;
 import info.mabin.java.io.ValvedOutputStream;
 import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,14 +14,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class StreamValveLocalTest {
     private static Logger LOG = LoggerFactory.getLogger(StreamValveLocalTest.class);
     private static final int TEST_SIZE = 10 * 1024 * 1024;
     private static final int TEST_SPEED = 1024 * 1024;
 
     @Test
-    public void valvedInputStreamTest() throws IOException {
-        LOG.info("== Valved InputStream Test ==");
+    public void valvedInputStreamWithSpeedSetTest() throws IOException {
+        LOG.info("== Valved InputStream with Speed Set Test ==");
 
         double estimatedMilliseconds = (TEST_SIZE / (double)TEST_SPEED) * 1000;
 
@@ -144,8 +147,8 @@ public class StreamValveLocalTest {
 
 
     @Test
-    public void valvedOutputStreamTest() throws IOException {
-        LOG.info("== Valved OutputStream Test ==");
+    public void valvedOutputStreamWithSpeedSetTest() throws IOException {
+        LOG.info("== Valved OutputStream with Speed Set Test ==");
 
         double estimatedMilliseconds = (TEST_SIZE / (double)TEST_SPEED) * 1000;
 
@@ -247,6 +250,94 @@ public class StreamValveLocalTest {
                 totalPassedTime,
                 estimatedMilliseconds / 0.01);
         LOG.info("PASS!");
+
+
+
+        LOG.info("Data Check...");
+        byte[] originalByteArray = randomByteInputStream.toByteArray();
+
+        byte[] testByteArray = byteArrayOutputStream.toByteArray();
+
+        Assert.assertArrayEquals(
+                "Passed Bytes are not Same with Created Bytes!",
+                originalByteArray,
+                testByteArray
+        );
+        LOG.info("PASS!");
+
+
+
+        valvedOutputStream.close();
+        byteArrayOutputStream.close();
+        randomByteInputStream.close();
+    }
+
+
+
+    @Test
+    public void valvedInputStreamWithoutSpeedSetTest() throws IOException {
+        LOG.info("== Valved InputStream without Speed Set Test ==");
+
+        RandomByteInputStream randomByteInputStream
+                = new RandomByteInputStream(TEST_SIZE, true);
+
+        ValvedInputStream valvedInputStream
+                = new ValvedInputStream(randomByteInputStream);
+
+        ByteArrayOutputStream byteArrayOutputStream
+                = new ByteArrayOutputStream();
+
+
+
+        byte[] buffer = new byte[4096];
+        int len;
+        while((len = valvedInputStream.read(buffer)) != -1){
+            byteArrayOutputStream.write(buffer, 0, len);
+        }
+
+
+
+        LOG.info("Data Check...");
+        byte[] createdByteArray = randomByteInputStream.toByteArray();
+
+        byte[] passedByteArray = byteArrayOutputStream.toByteArray();
+
+        Assert.assertArrayEquals(
+                "Passed Bytes are not Same with Created Bytes!",
+                createdByteArray,
+                passedByteArray);
+        LOG.info("PASS!");
+
+
+
+        byteArrayOutputStream.close();
+        valvedInputStream.close();
+        randomByteInputStream.close();
+    }
+
+
+    @Test
+    public void valvedOutputStreamWithoutSpeedSetTest() throws IOException {
+        LOG.info("== Valved OutputStream without Speed Set Test ==");
+
+
+
+        RandomByteInputStream randomByteInputStream
+                = new RandomByteInputStream(TEST_SIZE, true);
+
+        ByteArrayOutputStream byteArrayOutputStream
+                = new ByteArrayOutputStream();
+
+        ValvedOutputStream valvedOutputStream
+                = new ValvedOutputStream(byteArrayOutputStream);
+
+
+
+        byte[] buffer = new byte[4096];
+        int len;
+        while((len = randomByteInputStream.read(buffer)) != -1){
+            valvedOutputStream.write(buffer, 0, len);
+        }
 
 
 

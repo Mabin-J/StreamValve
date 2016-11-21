@@ -20,7 +20,20 @@ class StreamValve implements AutoCloseable{
 
 
 
+    StreamValve(){
+        speedCheckerThread = new SpeedCheckerThread();
+    }
+
+    @SuppressWarnings("unused")
     StreamValve(long speedBytesPerSecond){
+        this();
+
+        setSpeed(speedBytesPerSecond);
+    }
+
+
+
+    void setSpeed(long speedBytesPerSecond){
         bytesPerMillisecond = speedBytesPerSecond / 1000;
         if(bytesPerMillisecond == 0){
             bytesPerMillisecond = 1;
@@ -41,13 +54,10 @@ class StreamValve implements AutoCloseable{
             LOG.trace("nextAllowedBytesAmount: " + nextAllowedBytesAmount);
         }
 
-
-
-        speedCheckerThread = new SpeedCheckerThread();
-        speedCheckerThread.start();
+        if(!speedCheckerThread.isStarted()){
+            speedCheckerThread.start();
+        }
     }
-
-
 
     @Override
     public void close(){
@@ -56,7 +66,7 @@ class StreamValve implements AutoCloseable{
 
 
 
-    void delay(){
+    void flowControl(){
         while(allowedBytesAmount <= 0){
             try {
                 Thread.sleep(sleepTime);
@@ -81,13 +91,20 @@ class StreamValve implements AutoCloseable{
         private final Logger LOG = LoggerFactory.getLogger(SpeedCheckerThread.class);
         private final int LOOP_COUNT_FOR_LOG = (int) (1000 / (float) CHECK_PERIOD);
 
+        private volatile boolean isStarted = false;
+
         private SpeedCheckerThread(){
             super("StreamValveSpeedCheckerThread");
+        }
+
+        private boolean isStarted() {
+            return isStarted;
         }
 
         @Override
         public void run() {
             int count4Log = 0;
+            isStarted = true;
 
             while(!this.isInterrupted()){
                 try {
